@@ -1,5 +1,5 @@
 require("dotenv").config();
-const path = require('path')
+const path = require("path");
 //set up express
 const express = require("express");
 const app = express();
@@ -9,18 +9,23 @@ const server = http.createServer(app);
 //initialize socket.io
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
-const players = []
+const players = [];
 
 const PORT = process.env.PORT;
 
 app.set("view engine", "ejs");
 
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
+	res.setHeader("Content-Type", "text/html");
 	res.render("index");
 });
 
+app.get("/game", (req, res) => {
+	res.setHeader("Content-Type", "text/html");
+	res.render("game");
+});
 
 //start server
 server.listen(PORT, () => {
@@ -31,19 +36,22 @@ server.listen(PORT, () => {
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
 
-    socket.on("name", (data) => {
-        console.log(data)
-        if(players.length === 0){
-            const player = {
-                name: data,
-                role: admin,
-
-            }
-        }else {
-            const player = {
-                name: data,
-                role: player
-            }
-        }
-    })
+	socket.on("name", (data) => {
+		console.log(data);
+		if (players.length === 0) {
+			const player = {
+				name: data,
+				role: "admin",
+			};
+			players.push(player);
+			console.log(players);
+		} else {
+			const player = {
+				name: data,
+				role: "player",
+			};
+			players.push(player);
+			console.log(players);
+		}
+	});
 });
