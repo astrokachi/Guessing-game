@@ -9,9 +9,9 @@ const server = http.createServer(app);
 //initialize socket.io
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 
-const players = [];
-
 const PORT = process.env.PORT;
+
+let players = [];
 
 app.set("view engine", "ejs");
 
@@ -41,17 +41,28 @@ io.on("connection", (socket) => {
 		if (players.length === 0) {
 			const player = {
 				name: data,
-				role: "admin",
+				role: "game master",
+				id: socket.id,
 			};
 			players.push(player);
-			console.log(players);
+			socket.emit("role", players);
+			socket.broadcast.emit("role", players);
 		} else {
 			const player = {
 				name: data,
 				role: "player",
+				tries: 3,
+				id: socket.id,
 			};
 			players.push(player);
-			console.log(players);
+			socket.emit("role", players);
+			socket.broadcast.emit("role", players);
 		}
+	});
+
+	socket.on("disconnect", () => {
+		players = [...players.filter((player) => player.id !== socket.id)];
+		socket.broadcast.emit("role", players);
+		console.log(players);
 	});
 });
