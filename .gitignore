@@ -102,3 +102,14 @@ dist
 
 # TernJS port file
 .tern-port
+
+feat: Added a new feature to the navigation bar
+fix: Resolved a bug in the contact form
+style: Improved the layout of the blog post page
+chore: Updated dependencies in the package.json file
+refactor: Refactored the code for better performance
+docs: Added documentation for the new feature
+test: Added tests for the new feature
+revert: Reverted an earlier commit due to bugs
+perf: Improved the performance of the homepage
+security: Fixed a security vulnerability in the user authentication process.
