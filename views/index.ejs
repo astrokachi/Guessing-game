@@ -8,7 +8,7 @@
 		<script
 			type="text/javascript"
 			src="https://cdn.socket.io/socket.io-3.0.1.min.js"
-            defer
+			defer
 		></script>
 		<link
 			href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -26,9 +26,13 @@
 	</head>
 	<body class="w-screen h-screen text-white bg-purple-900">
 		<div class="container mx-auto">
-			<header class="font-bold text-xl text-center">Hey there </header>
+			<header class="font-bold text-xl text-center">Hey there</header>
 
-			<div class="flex flex-col items-center justify-center gap-4 w-full h-80">
+			<!-- Form container -->
+			<div
+				id="stage1"
+				class="flex flex-col items-center justify-center gap-4 w-full h-80"
+			>
 				<div>
 					<label for="name">Name</label>
 					<input
@@ -47,6 +51,19 @@
 					Submit
 				</button>
 			</div>
+			<!--  -->
+
+			<!-- Game container -->
+			<section id="stage2">
+				<h1 id="changeNo"></h1>
+				<h1 id="playerType"></h1>
+				<button
+					id="btn2"
+					class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+				>
+					Disconnect
+				</button>
+			</section>
 		</div>
 	</body>
 </html>
