@@ -47,7 +47,7 @@
 			</div>
 			<!--  -->
 
-			<!-- Game container -->
+			<!-- stage 2 container -->
 			<section id="stage2" class="hidden">
 				<h1 id="playerType"></h1>
 				<h1 id="changeNo"></h1>
@@ -55,6 +55,41 @@
 					id="actionBtncon"
 					class="flex flex-col items-center justify-center gap-2 mb-6 w-full h-80"
 				></div>
+			</section>
+
+			<!-- Question container -->
+			<section id="stage3" class="hidden">
+				<div
+					class="flex flex-col items-center justify-center gap-4 w-full h-80"
+				>
+					<div class="w-72 flex justify-between">
+						<label for="question">Question</label>
+						<input
+							id="question"
+							type="text"
+							name="question"
+							placeholder="Enter a question"
+							class="outline-none border border-blue-600 text-black rounded-md p-2"
+						/>
+					</div>
+					<div class="w-72 flex justify-between">
+						<label for="answer">Answer</label>
+						<input
+							id="answer"
+							type="text"
+							name="answer"
+							placeholder="Enter a answer"
+							class="outline-none border border-blue-600 text-black rounded-md p-2"
+						/>
+					</div>
+					<button
+						id="btn3"
+						class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+						data-ripple-light="true"
+					>
+						Submit
+					</button>
+				</div>
 			</section>
 		</div>
 	</body>
