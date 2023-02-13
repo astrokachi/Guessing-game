@@ -1,8 +1,10 @@
-import { convertStrings } from "./utils.js";
+import { convertStrings, createBtn, updateInfo } from "./utils.js";
 let socket;
 const btn1 = document.querySelector("#btn1");
+const btn3 = document.querySelector("#btn3");
 const stage1 = document.querySelector("#stage1");
 const stage2 = document.querySelector("#stage2");
+const stage3 = document.querySelector("#stage3");
 const actionBtncon = document.querySelector("#actionBtncon");
 let newBtn = document.createElement("button");
 let newEl = document.createElement("div");
@@ -19,6 +21,7 @@ btn1.addEventListener("click", function () {
 	if (inputName) {
 		socket = io("http://localhost:3000");
 		socket.emit("name", inputName);
+		//update view
 		stage1.classList.add("hidden");
 		stage2.classList.remove("hidden");
 
@@ -26,12 +29,11 @@ btn1.addEventListener("click", function () {
 			if (!users.gameMaster) {
 				//get user
 				const user = users.filter((user) => user.id === socket.id)[0];
-				console.log(user);
 				// display info
 				playerType.innerHTML = `You are a ${user.role}, ${user.name}`;
 				changeNo.innerHTML = `players: ${users.length}`;
 				//disply join button
-				createBtn("join");
+				createBtn("join", btnClass, newBtn);
 			}
 
 			if (users.gameMaster) {
@@ -40,10 +42,10 @@ btn1.addEventListener("click", function () {
 				playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
 				changeNo.innerHTML = `players: ${users.players.length}`;
 				//display btn create button
-				createBtn("create");
+				createBtn("create", btnClass, newBtn);
 				createBtnEl = document.querySelector("#create");
 				createBtnEl.addEventListener("click", () => {
-					socket.emit("start");
+					socket.emit("create");
 				});
 			}
 		});
@@ -55,13 +57,25 @@ btn1.addEventListener("click", function () {
 				actionBtncon.appendChild(newEl);
 			}
 		});
+
+		socket.on("createQuestion", () => {
+			//update view
+			stage2.classList.add("hidden");
+			stage3.classList.remove("hidden");
+
+			btn3.addEventListener("click", () => {
+				const questionEl = document.querySelector("#question");
+				const answerEl = document.querySelector("#answer");
+				console.log(questionEl);
+				if (questionEl.value && answerEl.value) {
+					socket.emit("start", {
+						question: questionEl.value,
+						answer: answerEl.value,
+					});
+				}
+			});
+		});
+
+		//end of logic
 	}
 });
-
-function createBtn(name) {
-	newBtn.id = name;
-	newBtn.innerHTML = `${name} game`;
-	newBtn.classList.add(...btnClass);
-	actionBtncon.inner = "";
-	actionBtncon.appendChild(newBtn);
-}
