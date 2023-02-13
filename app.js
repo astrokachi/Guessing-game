@@ -17,7 +17,7 @@ let gameSession = false;
 let waiting = [];
 let question = null;
 let answer = null;
-let guess = null;
+let winner = null;
 
 app.set("view engine", "ejs");
 
@@ -50,13 +50,13 @@ io.on("connection", (socket) => {
 				role: "game master",
 				id: socket.id,
 			};
-			socket.emit("role", { gameMaster, players: players });
 		} else {
 			const player = {
 				name: data,
 				role: "player",
 				tries: 3,
 				id: socket.id,
+				points: 0,
 			};
 
 			switch (gameSession) {
@@ -68,10 +68,8 @@ io.on("connection", (socket) => {
 				default:
 					break;
 			}
-			socket.emit("role", players);
-			//update roles
-			update(socket);
 		}
+		update(socket);
 	});
 
 	socket.on("disconnect", () => {
@@ -108,10 +106,23 @@ io.on("connection", (socket) => {
 		gameSession = true;
 		question = data.question;
 		answer = data.answer;
+		socket.broadcast.emit("Enter", { question: question, answer: answer });
+	});
+
+	socket.on("correct", () => {
+		let index;
+		winner = players.filter((player, i) => {
+			index = i;
+			return player.id === socket.id;
+		})[0];
+		winner.points = 10;
+		players = [...players.splice(index, 1), winner];
+		console.log(players);
+		socket.broadcast.emit("winner", winner);
 	});
 });
 
 function update(socket) {
+	socket.emit("role", { gameMaster, players: players });
 	socket.broadcast.emit("role", { gameMaster, players: players });
-	socket.broadcast.emit("role", players);
 }
