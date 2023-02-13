@@ -14,6 +14,10 @@ const PORT = process.env.PORT;
 let gameMaster = null;
 let players = [];
 let gameSession = false;
+let waiting = [];
+let question = null;
+let answer = null;
+let guess = null;
 
 app.set("view engine", "ejs");
 
@@ -54,10 +58,19 @@ io.on("connection", (socket) => {
 				tries: 3,
 				id: socket.id,
 			};
-			players.push(player);
+
+			switch (gameSession) {
+				case true:
+					waiting.push(player);
+					break;
+				case false:
+					players.push(player);
+				default:
+					break;
+			}
 			socket.emit("role", players);
-			socket.broadcast.emit("role", { gameMaster, players: players });
-			socket.broadcast.emit("role", players);
+			//update roles
+			update(socket);
 		}
 	});
 
@@ -77,16 +90,28 @@ io.on("connection", (socket) => {
 		} else {
 			players = [...players.filter((player) => player.id !== socket.id)];
 		}
-		socket.broadcast.emit("role", { gameMaster, players: players });
-		socket.broadcast.emit("role", players);
+		update(socket);
 	});
 
-	socket.on("start", () => {
-		if (players.length < 3 || !gameMaster) {
+	socket.on("create", () => {
+		if (players.length < 1 || !gameMaster) {
 			socket.emit(
 				"error",
 				"There must be at least 3 players and a game master"
 			);
+		} else {
+			socket.emit("createQuestion");
 		}
 	});
+
+	socket.on("start", (data) => {
+		gameSession = true;
+		question = data.question;
+		answer = data.answer;
+	});
 });
+
+function update(socket) {
+	socket.broadcast.emit("role", { gameMaster, players: players });
+	socket.broadcast.emit("role", players);
+}
