@@ -1,4 +1,9 @@
-import { convertStrings, createBtn, updateInfo } from "./utils.js";
+import {
+	convertStrings,
+	createBtn,
+	updateInfo,
+	createGameEl,
+} from "./utils.js";
 let socket;
 const btn1 = document.querySelector("#btn1");
 const btn3 = document.querySelector("#btn3");
@@ -6,6 +11,7 @@ const stage1 = document.querySelector("#stage1");
 const stage2 = document.querySelector("#stage2");
 const stage3 = document.querySelector("#stage3");
 const actionBtncon = document.querySelector("#actionBtncon");
+const container = document.querySelector(".container");
 let newBtn = document.createElement("button");
 let newEl = document.createElement("div");
 let createBtnEl;
@@ -34,6 +40,17 @@ btn1.addEventListener("click", function () {
 				changeNo.innerHTML = `players: ${users.length}`;
 				//disply join button
 				createBtn("join", btnClass, newBtn);
+				const joinBtnEl = document.querySelector("#join");
+				console.log(joinBtnEl);
+				socket.on("Enter", (data) => {
+					const { question, answer } = data;
+					joinBtnEl.addEventListener("click", function () {
+						stage2.classList.add("hidden");
+						//display new page with question
+						newEl = createGameEl(newEl);
+						container.appendChild(newEl);
+					});
+				});
 			}
 
 			if (users.gameMaster) {
@@ -66,7 +83,6 @@ btn1.addEventListener("click", function () {
 			btn3.addEventListener("click", () => {
 				const questionEl = document.querySelector("#question");
 				const answerEl = document.querySelector("#answer");
-				console.log(questionEl);
 				if (questionEl.value && answerEl.value) {
 					socket.emit("start", {
 						question: questionEl.value,
