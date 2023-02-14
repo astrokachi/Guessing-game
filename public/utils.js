@@ -11,11 +11,6 @@ function createBtn(btnName, className, btn) {
 	actionBtncon.appendChild(btn);
 }
 
-function updateInfo(user, users) {
-	playerType.innerHTML = `You are a ${user.role}, ${user.name}`;
-	changeNo.innerHTML = `players: ${users.length}`;
-}
-
 function createGameEl(newEl, question) {
 	newEl.innerHTML = `
 						<div
@@ -23,7 +18,7 @@ function createGameEl(newEl, question) {
 							class="flex flex-col items-center justify-center gap-4 w-full h-80"
 						>
 							<div class="text-4xl mb-8">${question}</div>
-							<div class="w-72 flex justify-between">
+							<div class="w-72 flex justify-between items-center">
 								<label for="answer">Answer</label>
 								<input
 									id="ans"
@@ -40,6 +35,7 @@ function createGameEl(newEl, question) {
 							>
 								Submit
 							</button>
+							<div id="tries" class="text-sm mb-4"></div>
 						</div>
 					`;
 
@@ -61,10 +57,37 @@ function gameMasterViewEl(newEl, question, answer) {
 	return newEl;
 }
 
+function winnerViewEl(newEl) {
+	newEl.innerHTML = `
+						<div
+						id="gmGameView"
+							class="flex flex-col items-center justify-center gap-4 w-full h-80"
+						>
+							<div class="text-2xl mb-4">You have won!!! 🎉🎉🎇</div>	
+						</div>
+					`;
+
+	return newEl;
+}
+
+function gameWonEl(newEl, winner) {
+	newEl.innerHTML = `
+						<div
+						id="gmGameView"
+							class="flex flex-col items-center justify-center gap-4 w-full h-80"
+						>
+							<div class="text-2xl mb-4">${winner.name} has won this round.</div>	
+						</div>
+					`;
+
+	return newEl;
+}
+
 export {
 	convertStrings,
 	createBtn,
-	updateInfo,
 	createGameEl,
 	gameMasterViewEl,
+	winnerViewEl,
+	gameWonEl,
 };

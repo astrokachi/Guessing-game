@@ -17,7 +17,7 @@ let gameSession = false;
 let waiting = [];
 let question = null;
 let answer = null;
-let winner = null;
+
 
 app.set("view engine", "ejs");
 
@@ -64,16 +64,19 @@ io.on("connection", (socket) => {
 					waiting.push(player);
 					break;
 				case false:
+					players = [...players, ...waiting];
 					players.push(player);
 				default:
 					break;
 			}
 		}
-		update(socket);
+
+		updateAll(socket);
 	});
 
 	socket.on("disconnect", () => {
 		if (gameMaster?.id === socket.id) {
+			gameSession = false;
 			if (players.length > 0) {
 				const newGm = players.splice(0, 1)[0];
 				gameMaster = {
@@ -81,14 +84,14 @@ io.on("connection", (socket) => {
 					role: "game master",
 					id: newGm.id,
 				};
-				console.log(players, gameMaster);
 			} else {
 				gameMaster = null;
 			}
 		} else {
 			players = [...players.filter((player) => player.id !== socket.id)];
 		}
-		update(socket);
+
+		updateAll(socket);
 	});
 
 	socket.on("create", () => {
@@ -107,22 +110,45 @@ io.on("connection", (socket) => {
 		question = data.question;
 		answer = data.answer;
 		socket.broadcast.emit("Enter", { question: question, answer: answer });
+		setTimeout(() => {
+			socket.emit("end")
+		}, 10000);
 	});
 
 	socket.on("correct", () => {
+		gameSession = false;
 		let index;
-		winner = players.filter((player, i) => {
+		let winner = players.filter((player, i) => {
 			index = i;
 			return player.id === socket.id;
 		})[0];
-		winner.points = 10;
+		winner ? (winner.points = 10) : null;
 		players = [...players.splice(index, 1), winner];
-		console.log(players);
+		players.forEach((player) => (player.tries = 3));
 		socket.broadcast.emit("winner", winner);
+	});
+
+	socket.on("wrong", () => {
+		let index;
+		//update tries
+		const player = players.filter((player, i) => {
+			index = i;
+			return player.id === socket.id;
+		})[0];
+		if (player.tries > 0) {
+			players[index].tries = players[index].tries - 1;
+		}
+		console.log(player);
+
+		update(socket);
 	});
 });
 
 function update(socket) {
 	socket.emit("role", { gameMaster, players: players });
+}
+
+function updateAll(socket) {
 	socket.broadcast.emit("role", { gameMaster, players: players });
+	update(socket);
 }

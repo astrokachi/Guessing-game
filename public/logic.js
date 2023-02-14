@@ -1,8 +1,10 @@
 import {
 	convertStrings,
 	createBtn,
-	updateInfo,
 	createGameEl,
+	gameMasterViewEl,
+	winnerViewEl,
+	gameWonEl,
 } from "./utils.js";
 let socket;
 const btn1 = document.querySelector("#btn1");
@@ -32,28 +34,64 @@ btn1.addEventListener("click", function () {
 		stage2.classList.remove("hidden");
 
 		socket.on("role", (users) => {
-			if (!users.gameMaster) {
+			//All player logic
+			if (users.gameMaster.id !== socket.id) {
 				//get user
-				const user = users.filter((user) => user.id === socket.id)[0];
+				const user = users.players.filter((user) => user.id === socket.id)[0];
 				// display info
 				playerType.innerHTML = `You are a ${user.role}, ${user.name}`;
-				changeNo.innerHTML = `players: ${users.length}`;
+				changeNo.innerHTML = `players: ${users.players.length}`;
 				//disply join button
 				createBtn("join", btnClass, newBtn);
 				const joinBtnEl = document.querySelector("#join");
-				console.log(joinBtnEl);
 				socket.on("Enter", (data) => {
 					const { question, answer } = data;
 					joinBtnEl.addEventListener("click", function () {
 						stage2.classList.add("hidden");
 						//display new page with question
-						newEl = createGameEl(newEl);
+						newEl = createGameEl(newEl, question);
 						container.appendChild(newEl);
+						//
+						const btn4 = document.querySelector("#btn4");
+						btn4.addEventListener("click", () => {
+							const ans = document.querySelector("#ans").value;
+							if (ans === answer) {
+								//handle correct logic
+								socket.emit("correct");
+							} else {
+								//handle wrong logic
+								socket.emit("wrong");
+							}
+						});
 					});
+				});
+				//update tries display
+				const triesEl = document.querySelector("#tries");
+				if (triesEl) {
+					triesEl.innerHTML = `You have ${user.tries} tries left!`;
+				}
+
+				if (user.tries === 0) {
+					const ans = document.querySelector("#ans");
+					ans.disabled = true;
+				}
+
+				socket.on("winner", (winner) => {
+					if (winner.id === socket.id) {
+						newEl = winnerViewEl(newEl);
+						document.getElementById("gameView").classList.add("hidden");
+						container.appendChild(newEl);
+					} else {
+						newEl = gameWonEl(newEl, winner);
+						// document.getElementById("gmGameView").classList.add("hidden");
+						document.getElementById("gameView").classList.add("hidden");
+						container.appendChild(newEl);
+					}
 				});
 			}
 
-			if (users.gameMaster) {
+			//Game master logic
+			else if (users.gameMaster.id === socket.id) {
 				let gm = users.gameMaster;
 				//display info
 				playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
@@ -66,6 +104,8 @@ btn1.addEventListener("click", function () {
 				});
 			}
 		});
+		//end of role event
+
 		socket.on("error", (message) => {
 			//display error message
 			newEl.innerHTML = message;
@@ -88,10 +128,17 @@ btn1.addEventListener("click", function () {
 						question: questionEl.value,
 						answer: answerEl.value,
 					});
+					//update game masters game page view
+					stage3.classList.add("hidden");
+					newEl = gameMasterViewEl(newEl, questionEl.value, answerEl.value);
+					container.appendChild(newEl);
 				}
 			});
 		});
 
+		socket.on('end', () => {
+			console.log('Time is up!')
+		})
 		//end of logic
 	}
 });
