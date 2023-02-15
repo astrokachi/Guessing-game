@@ -24,45 +24,51 @@ const btnClass = convertStrings(
 
 const elClass = convertStrings("text-red-600 font-sm");
 
+socket = io("http://localhost:3000");
+
 btn1.addEventListener("click", function () {
 	const inputName = document.querySelector("#name").value;
 	if (inputName) {
-		socket = io("http://localhost:3000");
 		socket.emit("name", inputName);
 		//update view
 		stage1.classList.add("hidden");
 		stage2.classList.remove("hidden");
 
 		socket.on("role", (users) => {
+			console.log(users);
 			//All player logic
-			if (users.gameMaster.id !== socket.id) {
+			if (users.waiting.length > 0) {
+				const user = users.waiting.filter((user) => user.id === socket.id)[0];
+				// display info
+				playerType.innerHTML = `You are a ${user.role}, ${user.name}`;
+				stage2.innerHTML = "please wait for the next session to start";
+			} else if (users.gameMaster.id !== socket.id) {
 				//get user
 				const user = users.players.filter((user) => user.id === socket.id)[0];
 				// display info
 				playerType.innerHTML = `You are a ${user.role}, ${user.name}`;
 				changeNo.innerHTML = `players: ${users.players.length}`;
+
+				stage2.innerHTML = "Please wait for the game master to set a question.";
+
 				//disply join button
-				createBtn("join", btnClass, newBtn);
-				const joinBtnEl = document.querySelector("#join");
 				socket.on("Enter", (data) => {
 					const { question, answer } = data;
-					joinBtnEl.addEventListener("click", function () {
-						stage2.classList.add("hidden");
-						//display new page with question
-						newEl = createGameEl(newEl, question);
-						container.appendChild(newEl);
-						//
-						const btn4 = document.querySelector("#btn4");
-						btn4.addEventListener("click", () => {
-							const ans = document.querySelector("#ans").value;
-							if (ans === answer) {
-								//handle correct logic
-								socket.emit("correct");
-							} else {
-								//handle wrong logic
-								socket.emit("wrong");
-							}
-						});
+					stage2.classList.add("hidden");
+					//display new page with question
+					newEl = createGameEl(newEl, question);
+					container.appendChild(newEl);
+					//
+					const btn4 = document.querySelector("#btn4");
+					btn4.addEventListener("click", () => {
+						const ans = document.querySelector("#ans").value;
+						if (ans === answer) {
+							//handle correct logic
+							socket.emit("correct");
+						} else {
+							//handle wrong logic
+							socket.emit("wrong");
+						}
 					});
 				});
 				//update tries display
@@ -75,19 +81,6 @@ btn1.addEventListener("click", function () {
 					const ans = document.querySelector("#ans");
 					ans.disabled = true;
 				}
-
-				socket.on("winner", (winner) => {
-					if (winner.id === socket.id) {
-						newEl = winnerViewEl(newEl);
-						document.getElementById("gameView").classList.add("hidden");
-						container.appendChild(newEl);
-					} else {
-						newEl = gameWonEl(newEl, winner);
-						// document.getElementById("gmGameView").classList.add("hidden");
-						document.getElementById("gameView").classList.add("hidden");
-						container.appendChild(newEl);
-					}
-				});
 			}
 
 			//Game master logic
@@ -104,7 +97,22 @@ btn1.addEventListener("click", function () {
 				});
 			}
 		});
+
 		//end of role event
+		socket.on("winner", (winner) => {
+			if (winner.id === socket.id) {
+				newEl = winnerViewEl(newEl);
+				container.appendChild(newEl);
+				createBtnEl = document.querySelector("#create");
+				createBtnEl.addEventListener("click", () => {
+					document.getElementById("winnerView").innerHTML = "";
+					socket.emit("create");
+				});
+			} else {
+				newEl = gameWonEl(newEl, winner);
+				container.appendChild(newEl);
+			}
+		});
 
 		socket.on("error", (message) => {
 			//display error message
@@ -136,9 +144,9 @@ btn1.addEventListener("click", function () {
 			});
 		});
 
-		socket.on('end', () => {
-			console.log('Time is up!')
-		})
+		socket.on("end", () => {
+			console.log("Time is up!");
+		});
 		//end of logic
 	}
 });

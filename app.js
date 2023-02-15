@@ -18,7 +18,6 @@ let waiting = [];
 let question = null;
 let answer = null;
 
-
 app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -41,6 +40,7 @@ server.listen(PORT, () => {
 //socket logic
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
+	socket.emit("session", gameSession);
 
 	socket.on("name", (data) => {
 		console.log(data);
@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("disconnect", () => {
-		if (gameMaster?.id === socket.id) {
+		if (gameMaster && gameMaster.id === socket.id) {
 			gameSession = false;
 			if (players.length > 0) {
 				const newGm = players.splice(0, 1)[0];
@@ -84,10 +84,11 @@ io.on("connection", (socket) => {
 					role: "game master",
 					id: newGm.id,
 				};
+				console.log(gameMaster);
 			} else {
 				gameMaster = null;
 			}
-		} else {
+		} else if (gameMaster && gameMaster.id !== socket.id) {
 			players = [...players.filter((player) => player.id !== socket.id)];
 		}
 
@@ -96,12 +97,10 @@ io.on("connection", (socket) => {
 
 	socket.on("create", () => {
 		if (players.length < 1 || !gameMaster) {
-			socket.emit(
-				"error",
-				"There must be at least 3 players and a game master"
-			);
+			socket.emit("error", "There must be at least 3 players");
 		} else {
 			socket.emit("createQuestion");
+			socket.broadcast.emit("join");
 		}
 	});
 
@@ -111,44 +110,58 @@ io.on("connection", (socket) => {
 		answer = data.answer;
 		socket.broadcast.emit("Enter", { question: question, answer: answer });
 		setTimeout(() => {
-			socket.emit("end")
-		}, 10000);
+			socket.emit("end");
+		}, 1000);
 	});
 
 	socket.on("correct", () => {
 		gameSession = false;
 		let index;
+		players = [...players, ...waiting];
+		waiting = [];
 		let winner = players.filter((player, i) => {
 			index = i;
 			return player.id === socket.id;
 		})[0];
 		winner ? (winner.points = 10) : null;
-		players = [...players.splice(index, 1), winner];
+		//change the game master to the player that just won
+		gameMaster.role = "player";
+		players[index] = gameMaster;
 		players.forEach((player) => (player.tries = 3));
+		winner ? (winner.role = "game master") : null;
+		gameMaster = winner;
+
 		socket.broadcast.emit("winner", winner);
+		socket.emit("winner", winner);
+
+		updateAll(socket);
 	});
 
 	socket.on("wrong", () => {
-		let index;
 		//update tries
-		const player = players.filter((player, i) => {
-			index = i;
-			return player.id === socket.id;
-		})[0];
-		if (player.tries > 0) {
-			players[index].tries = players[index].tries - 1;
-		}
-		console.log(player);
-
-		update(socket);
+		players.forEach((player) => {
+			if (player.id == socket.id) {
+				player.tries--;
+				console.log(player);
+				update(socket);
+			}
+		});
 	});
 });
 
 function update(socket) {
-	socket.emit("role", { gameMaster, players: players });
+	socket.emit("role", { gameMaster, players: players, waiting: waiting });
 }
 
 function updateAll(socket) {
-	socket.broadcast.emit("role", { gameMaster, players: players });
+	socket.broadcast.emit("role", {
+		gameMaster,
+		players: players,
+		waiting: waiting,
+	});
 	update(socket);
 }
+
+//Update all -> emit + broadcast emit
+//update all but current -> broadcast emit
+//update one -> emit

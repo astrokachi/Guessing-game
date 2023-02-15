@@ -5,7 +5,7 @@ function convertStrings(str) {
 
 function createBtn(btnName, className, btn) {
 	btn.id = btnName;
-	btn.innerHTML = `${btnName} game`;
+	btn.innerHTML = `${btnName} question`;
 	btn.classList.add(...className);
 	actionBtncon.inner = "";
 	actionBtncon.appendChild(btn);
@@ -24,7 +24,7 @@ function createGameEl(newEl, question) {
 									id="ans"
 									type="text"
 									name="answer"
-									placeholder="Enter a answer"
+									placeholder="Enter an answer"
 									class="outline-none border border-blue-600 text-black rounded-md p-2"
 								/>
 							</div>
@@ -60,10 +60,12 @@ function gameMasterViewEl(newEl, question, answer) {
 function winnerViewEl(newEl) {
 	newEl.innerHTML = `
 						<div
-						id="gmGameView"
+						id="winnerView"
 							class="flex flex-col items-center justify-center gap-4 w-full h-80"
 						>
 							<div class="text-2xl mb-4">You have won!!! 🎉🎉🎇</div>	
+							<div class="text-xl mb-4">You are the new game master</div>
+							<button id="create" class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" >Create</button>	
 						</div>
 					`;
 
@@ -73,7 +75,7 @@ function winnerViewEl(newEl) {
 function gameWonEl(newEl, winner) {
 	newEl.innerHTML = `
 						<div
-						id="gmGameView"
+						id="gameWon"
 							class="flex flex-col items-center justify-center gap-4 w-full h-80"
 						>
 							<div class="text-2xl mb-4">${winner.name} has won this round.</div>	
