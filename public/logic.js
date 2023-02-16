@@ -1,6 +1,5 @@
 import {
 	convertStrings,
-	createBtn,
 	createGameEl,
 	gameMasterViewEl,
 	winnerViewEl,
@@ -13,7 +12,6 @@ const btn3 = document.querySelector("#btn3");
 const stage1 = document.querySelector("#stage1");
 const stage2 = document.querySelector("#stage2");
 const stage3 = document.querySelector("#stage3");
-const actionBtncon = document.querySelector("#actionBtncon");
 const container = document.querySelector(".container");
 let newBtn = document.createElement("button");
 let newEl = document.createElement("div");
@@ -93,16 +91,25 @@ btn1.addEventListener("click", function () {
 
 			//Game master logic
 			else if (users.gameMaster.id === socket.id) {
-				let gm = users.gameMaster;
-				//display info
-				playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
-				changeNo.innerHTML = `players: ${users.players.length}`;
-				//display btn create button
-				createBtn("create", btnClass, newBtn);
-				createBtnEl = document.querySelector("#create");
-				createBtnEl.addEventListener("click", () => {
-					socket.emit("create");
-				});
+				if (users.show) {
+					let gm = users.gameMaster;
+					//display info
+					playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
+					changeNo.innerHTML = `players: ${users.players.length}`;
+					stage2.classList.remove("hidden");
+					stage2.classList.add("flex", "flex-col");
+					//display btn create button
+					newBtn.id = "create";
+					newBtn.innerHTML = `create question`;
+					newBtn.classList.add(...btnClass);
+					stage2.innerHTML = "";
+					stage2.appendChild(newBtn);
+					//
+					createBtnEl = document.querySelector("#create");
+					createBtnEl.addEventListener("click", () => {
+						socket.emit("create");
+					});
+				}
 			}
 
 			socket.on("createQuestion", () => {
@@ -149,8 +156,8 @@ btn1.addEventListener("click", function () {
 			//display error message
 			newEl.innerHTML = message;
 			newEl.classList.add(elClass);
-			if (actionBtncon.childElementCount === 1) {
-				actionBtncon.appendChild(newEl);
+			if (stage2.childElementCount === 1) {
+				stage2.appendChild(newEl);
 			}
 		});
 

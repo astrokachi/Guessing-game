@@ -3,14 +3,6 @@ function convertStrings(str) {
 	return str;
 }
 
-function createBtn(btnName, className, btn) {
-	btn.id = btnName;
-	btn.innerHTML = `${btnName} question`;
-	btn.classList.add(...className);
-	actionBtncon.inner = "";
-	actionBtncon.appendChild(btn);
-}
-
 function createGameEl(newEl, question) {
 	newEl.innerHTML = `
 						<div
@@ -99,7 +91,6 @@ function displayPoints(players, gm) {
 
 export {
 	convertStrings,
-	createBtn,
 	createGameEl,
 	gameMasterViewEl,
 	winnerViewEl,

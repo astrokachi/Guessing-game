@@ -17,6 +17,7 @@ let gameSession = false;
 let waiting = [];
 let question = null;
 let answer = null;
+let show = true;
 
 app.set("view engine", "ejs");
 
@@ -40,7 +41,7 @@ server.listen(PORT, () => {
 //socket logic
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
-	socket.emit("isSet", false);
+	socket.emit("isSet", gameMaster?.id);
 
 	socket.on("name", (data) => {
 		console.log(data);
@@ -73,11 +74,12 @@ io.on("connection", (socket) => {
 		}
 
 		updateAll(socket);
-		socket.broadcast.emit("isSet", true);
+		
 	});
 
 	socket.on("disconnect", () => {
 		if (gameMaster && gameMaster.id === socket.id) {
+			show = true;
 			gameSession = false;
 			if (players.length > 0) {
 				const newGm = players.splice(0, 1)[0];
@@ -85,6 +87,7 @@ io.on("connection", (socket) => {
 					name: newGm.name,
 					role: "game master",
 					id: newGm.id,
+					points: newGm.points,
 				};
 				console.log(gameMaster);
 			} else {
@@ -103,6 +106,7 @@ io.on("connection", (socket) => {
 		} else {
 			socket.emit("createQuestion");
 			socket.broadcast.emit("join");
+			show = false;
 		}
 	});
 
@@ -152,7 +156,12 @@ io.on("connection", (socket) => {
 });
 
 function update(socket) {
-	socket.emit("role", { gameMaster, players: players, waiting: waiting });
+	socket.emit("role", {
+		gameMaster,
+		players: players,
+		waiting: waiting,
+		show: show,
+	});
 }
 
 function updateAll(socket) {
@@ -160,6 +169,7 @@ function updateAll(socket) {
 		gameMaster,
 		players: players,
 		waiting: waiting,
+		show: show,
 	});
 	update(socket);
 }
