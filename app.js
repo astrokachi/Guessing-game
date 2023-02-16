@@ -40,7 +40,7 @@ server.listen(PORT, () => {
 //socket logic
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
-	socket.emit("session", gameSession);
+	socket.emit("isSet", false);
 
 	socket.on("name", (data) => {
 		console.log(data);
@@ -49,6 +49,7 @@ io.on("connection", (socket) => {
 				name: data,
 				role: "game master",
 				id: socket.id,
+				points: 0,
 			};
 		} else {
 			const player = {
@@ -72,6 +73,7 @@ io.on("connection", (socket) => {
 		}
 
 		updateAll(socket);
+		socket.broadcast.emit("isSet", true);
 	});
 
 	socket.on("disconnect", () => {
@@ -116,21 +118,21 @@ io.on("connection", (socket) => {
 
 	socket.on("correct", () => {
 		gameSession = false;
-		let index;
 		players = [...players, ...waiting];
 		waiting = [];
-		let winner = players.filter((player, i) => {
-			index = i;
-			return player.id === socket.id;
-		})[0];
-		winner ? (winner.points = 10) : null;
-		//change the game master to the player that just won
-		gameMaster.role = "player";
-		players[index] = gameMaster;
-		players.forEach((player) => (player.tries = 3));
+		//get and update winner
+		let winner = players.filter((player) => player.id === socket.id)[0];
+		winner ? (winner.points += 10) : null;
 		winner ? (winner.role = "game master") : null;
-		gameMaster = winner;
 
+		gameMaster.role = "player";
+		//update other players
+		players.forEach((player) => (player.tries = 3));
+		players = players.filter((player) => player.id !== socket.id);
+		players.push(gameMaster);
+
+		//set winner to game master
+		gameMaster = winner;
 		socket.broadcast.emit("winner", winner);
 		socket.emit("winner", winner);
 

@@ -65,7 +65,7 @@ function winnerViewEl(newEl) {
 						>
 							<div class="text-2xl mb-4">You have won!!! 🎉🎉🎇</div>	
 							<div class="text-xl mb-4">You are the new game master</div>
-							<button id="create" class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" >Create</button>	
+							<button id="create" class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" >Create session</button>	
 						</div>
 					`;
 
@@ -85,6 +85,18 @@ function gameWonEl(newEl, winner) {
 	return newEl;
 }
 
+function displayPoints(players, gm) {
+	document.querySelector("aside").innerHTML =
+		"<div class='text-lg h hidden'>POINTS</div>";
+	document.querySelector(".h").classList.remove("hidden");
+	let newEl = document.createElement("div");
+	players.forEach((player) => {
+		newEl.innerHTML += `<ol>${player.name}: ${player.points}</ol>`;
+	});
+	newEl.innerHTML += `<ol>${gm.name}: ${gm.points}</ol>`;
+	document.querySelector("aside").appendChild(newEl);
+}
+
 export {
 	convertStrings,
 	createBtn,
@@ -92,4 +104,5 @@ export {
 	gameMasterViewEl,
 	winnerViewEl,
 	gameWonEl,
+	displayPoints,
 };
