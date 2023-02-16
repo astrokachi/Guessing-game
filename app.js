@@ -41,7 +41,8 @@ server.listen(PORT, () => {
 //socket logic
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
-	socket.emit("isSet", gameMaster?.id);
+	socket.emit("isSet", gameMaster === null ? false : true);
+	console.log(gameMaster);
 
 	socket.on("name", (data) => {
 		console.log(data);
@@ -52,6 +53,7 @@ io.on("connection", (socket) => {
 				id: socket.id,
 				points: 0,
 			};
+			socket.broadcast.emit("isSet", gameMaster === null ? false : true);
 		} else {
 			const player = {
 				name: data,
@@ -74,7 +76,6 @@ io.on("connection", (socket) => {
 		}
 
 		updateAll(socket);
-		
 	});
 
 	socket.on("disconnect", () => {
