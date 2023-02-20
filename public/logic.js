@@ -146,6 +146,8 @@ btn1.addEventListener("click", function () {
 			});
 
 			socket.on("winner", (winner) => {
+				time = 0;
+				run = false;
 				displayPoints(users.players, users.gameMaster);
 				if (winner.id === socket.id) {
 					newEl = winnerViewEl(newEl);

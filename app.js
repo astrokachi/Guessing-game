@@ -42,7 +42,6 @@ io.on("connection", (socket) => {
 	console.log("Someone connected!");
 	socket.emit("isSet", gameMaster === null ? false : true);
 
-
 	socket.on("name", (data) => {
 		if (!gameMaster) {
 			gameMaster = {
@@ -88,7 +87,6 @@ io.on("connection", (socket) => {
 					points: newGm.points,
 					tries: 3,
 				};
-			
 			} else {
 				gameMaster = null;
 			}
@@ -126,7 +124,6 @@ io.on("connection", (socket) => {
 		socket.emit("end", answer);
 		players.forEach((player) => (player.tries = 3));
 		updateAll(socket);
-
 	});
 
 	socket.on("correct", () => {
@@ -139,6 +136,7 @@ io.on("connection", (socket) => {
 		winner ? (winner.role = "game master") : null;
 
 		gameMaster.role = "player";
+		gameMaster.tries = 3;
 		//update other players
 		players.forEach((player) => (player.tries = 3));
 		players = players.filter((player) => player.id !== socket.id);
