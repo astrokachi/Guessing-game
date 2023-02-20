@@ -41,10 +41,9 @@ server.listen(PORT, () => {
 io.on("connection", (socket) => {
 	console.log("Someone connected!");
 	socket.emit("isSet", gameMaster === null ? false : true);
-	console.log(gameMaster);
+
 
 	socket.on("name", (data) => {
-		console.log(data);
 		if (!gameMaster) {
 			gameMaster = {
 				name: data,
@@ -89,7 +88,7 @@ io.on("connection", (socket) => {
 					points: newGm.points,
 					tries: 3,
 				};
-				console.log(gameMaster);
+			
 			} else {
 				gameMaster = null;
 			}
@@ -127,7 +126,7 @@ io.on("connection", (socket) => {
 		socket.emit("end", answer);
 		players.forEach((player) => (player.tries = 3));
 		updateAll(socket);
-		console.log(gameMaster, players);
+
 	});
 
 	socket.on("correct", () => {
@@ -158,7 +157,6 @@ io.on("connection", (socket) => {
 		players.forEach((player) => {
 			if (player.id == socket.id) {
 				player.tries--;
-				console.log(player);
 				update(socket);
 			}
 		});

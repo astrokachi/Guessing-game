@@ -47,7 +47,6 @@ btn1.addEventListener("click", function () {
 
 		socket.on("role", (users) => {
 			displayPoints(users.players, users.gameMaster);
-			console.log(users);
 			//All player logic
 			if (users.waiting.length > 0) {
 				const user = users.waiting.filter((user) => user.id === socket.id)[0];
