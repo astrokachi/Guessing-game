@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("create", () => {
-		if (players.length < 1 || !gameMaster) {
+		if (players.length < 3 || !gameMaster) {
 			socket.emit("error", "There must be at least 3 players");
 		} else {
 			socket.emit("createQuestion");
