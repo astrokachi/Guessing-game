@@ -17,7 +17,6 @@ let gameSession = false;
 let waiting = [];
 let question = null;
 let answer = null;
-let show = true;
 
 app.set("view engine", "ejs");
 
@@ -80,7 +79,6 @@ io.on("connection", (socket) => {
 
 	socket.on("disconnect", () => {
 		if (gameMaster && gameMaster.id === socket.id) {
-			show = true;
 			gameSession = false;
 			if (players.length > 0) {
 				const newGm = players.splice(0, 1)[0];
@@ -89,6 +87,7 @@ io.on("connection", (socket) => {
 					role: "game master",
 					id: newGm.id,
 					points: newGm.points,
+					tries: 3,
 				};
 				console.log(gameMaster);
 			} else {
@@ -107,7 +106,6 @@ io.on("connection", (socket) => {
 		} else {
 			socket.emit("createQuestion");
 			socket.broadcast.emit("join");
-			show = false;
 		}
 	});
 
@@ -116,9 +114,20 @@ io.on("connection", (socket) => {
 		question = data.question;
 		answer = data.answer;
 		socket.broadcast.emit("Enter", { question: question, answer: answer });
-		setTimeout(() => {
-			socket.emit("end");
-		}, 1000);
+	});
+
+	socket.on("time up", () => {
+		let newGm = players[0];
+		newGm.role = "game master";
+		newGm.tries = 3;
+		gameMaster.role = "player";
+		players[0] = gameMaster;
+		gameMaster = newGm;
+		socket.broadcast.emit("end", answer);
+		socket.emit("end", answer);
+		players.forEach((player) => (player.tries = 3));
+		updateAll(socket);
+		console.log(gameMaster, players);
 	});
 
 	socket.on("correct", () => {
@@ -161,7 +170,6 @@ function update(socket) {
 		gameMaster,
 		players: players,
 		waiting: waiting,
-		show: show,
 	});
 }
 
@@ -170,7 +178,6 @@ function updateAll(socket) {
 		gameMaster,
 		players: players,
 		waiting: waiting,
-		show: show,
 	});
 	update(socket);
 }

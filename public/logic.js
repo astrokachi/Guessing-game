@@ -5,6 +5,7 @@ import {
 	winnerViewEl,
 	gameWonEl,
 	displayPoints,
+	gameEnd,
 } from "./utils.js";
 let socket;
 const btn1 = document.querySelector("#btn1");
@@ -15,7 +16,10 @@ const stage3 = document.querySelector("#stage3");
 const container = document.querySelector(".container");
 let newBtn = document.createElement("button");
 let newEl = document.createElement("div");
+let winnerView = document.querySelector("#winnerView");
 let createBtnEl;
+let run = false;
+let time = 0;
 
 const btnClass = convertStrings(
 	"middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
@@ -24,6 +28,7 @@ const btnClass = convertStrings(
 const elClass = convertStrings("text-red-600 font-sm");
 
 socket = io("http://localhost:3000");
+
 socket.on("isSet", (isSet) => {
 	if (isSet) {
 		btn1.innerHTML = "join game";
@@ -31,6 +36,7 @@ socket.on("isSet", (isSet) => {
 		btn1.innerHTML = "create game";
 	}
 });
+
 btn1.addEventListener("click", function () {
 	const inputName = document.querySelector("#name").value;
 	if (inputName) {
@@ -83,33 +89,33 @@ btn1.addEventListener("click", function () {
 					triesEl.innerHTML = `You have ${user.tries} tries left!`;
 				}
 
-				if (user.tries === 0) {
+				if (user.tries <= 0) {
 					const ans = document.querySelector("#ans");
 					ans.disabled = true;
+					triesEl.innerHTML = `You have ${0} tries left!`;
 				}
 			}
 
 			//Game master logic
 			else if (users.gameMaster.id === socket.id) {
-				if (users.show) {
-					let gm = users.gameMaster;
-					//display info
-					playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
-					changeNo.innerHTML = `players: ${users.players.length}`;
-					stage2.classList.remove("hidden");
-					stage2.classList.add("flex", "flex-col");
-					//display btn create button
-					newBtn.id = "create";
-					newBtn.innerHTML = `create question`;
-					newBtn.classList.add(...btnClass);
-					stage2.innerHTML = "";
-					stage2.appendChild(newBtn);
-					//
-					createBtnEl = document.querySelector("#create");
-					createBtnEl.addEventListener("click", () => {
-						socket.emit("create");
-					});
-				}
+				let gm = users.gameMaster;
+				//display info
+				playerType.innerHTML = `You are the ${gm.role}, ${gm.name}`;
+				changeNo.innerHTML = `players: ${users.players.length}`;
+				stage2.classList.remove("hidden");
+				stage2.classList.add("flex", "flex-col");
+				//display btn create button
+				newBtn.id = "create";
+				newBtn.innerHTML = `create question`;
+				newBtn.classList.add(...btnClass);
+				stage2.innerHTML = "";
+				stage2.appendChild(newBtn);
+				//
+				createBtnEl = document.querySelector("#create");
+				createBtnEl.addEventListener("click", () => {
+					socket.emit("create");
+					winnerView ? (winnerView.innerHTML = "") : null;
+				});
 			}
 
 			socket.on("createQuestion", () => {
@@ -121,6 +127,7 @@ btn1.addEventListener("click", function () {
 					const questionEl = document.querySelector("#question");
 					const answerEl = document.querySelector("#answer");
 					if (questionEl.value && answerEl.value) {
+						run = true;
 						socket.emit("start", {
 							question: questionEl.value,
 							answer: answerEl.value,
@@ -131,6 +138,12 @@ btn1.addEventListener("click", function () {
 						container.appendChild(newEl);
 					}
 				});
+			});
+
+			socket.on("end", (answer) => {
+				newEl = gameEnd(newEl, answer);
+				container.appendChild(newEl);
+				socket.emit("restart");
 			});
 
 			socket.on("winner", (winner) => {
@@ -150,7 +163,7 @@ btn1.addEventListener("click", function () {
 			});
 		});
 
-		//end of role event
+		//end of role
 
 		socket.on("error", (message) => {
 			//display error message
@@ -161,9 +174,20 @@ btn1.addEventListener("click", function () {
 			}
 		});
 
-		socket.on("end", () => {
-			console.log("Time is up!");
-		});
 		//end of logic
 	}
 });
+
+setInterval(() => {
+	if (run) {
+		const timer = setTimeout(() => {
+			time++;
+			if (time == 10) {
+				run = false;
+				socket.emit("time up");
+				clearTimeout(timer);
+				time = 0;
+			}
+		}, 1000);
+	}
+}, 1000);

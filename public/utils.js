@@ -57,7 +57,7 @@ function winnerViewEl(newEl) {
 						>
 							<div class="text-2xl mb-4">You have won!!! 🎉🎉🎇</div>	
 							<div class="text-xl mb-4">You are the new game master</div>
-							<button id="create" class="middle none center block mx-auto rounded-lg bg-purple-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-purple-500/20 transition-all hover:shadow-lg hover:shadow-purple-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none" >Create session</button>	
+							
 						</div>
 					`;
 
@@ -73,6 +73,20 @@ function gameWonEl(newEl, winner) {
 							<div class="text-2xl mb-4">${winner.name} has won this round.</div>	
 						</div>
 					`;
+
+	return newEl;
+}
+
+function gameEnd(newEl, answer) {
+	newEl.innerHTML = `
+	<div
+	id="gameWon"
+		class="flex flex-col items-center justify-center gap-4 w-full h-80"
+	>
+		<div class="text-2xl mb-4">The answer is ${answer}.</div>	
+		<div class="text-2xl mb-4">Nobody guessed it right so a new game master will be set!</div>	
+	</div>
+`;
 
 	return newEl;
 }
@@ -96,4 +110,5 @@ export {
 	winnerViewEl,
 	gameWonEl,
 	displayPoints,
+	gameEnd,
 };
