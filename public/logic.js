@@ -27,7 +27,7 @@ const btnClass = convertStrings(
 
 const elClass = convertStrings("text-red-600 font-sm");
 
-socket = io("http://localhost:3000");
+socket = io();
 
 socket.on("isSet", (isSet) => {
 	if (isSet) {
